@@ -9,7 +9,6 @@ const Square = struct({ x: 0, y: 0, width: 2, height: 2, color: GREY, isAlive: f
 
 const Grid = struct({ width: 100, height: 100, cellSize: 2, cells: [], nextCells: [] });
 
-console.log(d3.version);
 mainGrid = new Grid();
 
 getNeighbors = (xi, yi) => {
@@ -34,7 +33,22 @@ getNeighbors = (xi, yi) => {
 
 getNeighborhoodColor = (cells) => {
     cells = cells.filter((cell) => cell.isAlive);
-    return d3.mode(cells.map((cell) => cell.color));
+    let counter = {};
+    for (const cell of cells) {
+        if (counter[cell.color] === undefined) {
+            counter[cell.color] = 0;
+        }
+        counter[cell.color] += 1;
+    }
+    let max = 0;
+    let maxColor = null;
+    for (const color in counter) {
+        if (counter[color] > max) {
+            max = counter[color];
+            maxColor = color;
+        }
+    }
+    return maxColor;
 }
 
 isHovering = (square) => {
@@ -106,10 +120,6 @@ stage.tick = (context) => {
     }
     mainGrid.cells = mainGrid.nextCells;
     mainGrid.nextCells = [];
-
-    // d3 select canvas
-    // d3 select all squares
-    print9(d3.select("canvas"));
 }
 
 on(mouseDown("Middle"), () => {
