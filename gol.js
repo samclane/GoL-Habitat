@@ -5,6 +5,11 @@ defineGetter(pointer, "x", () => pointer.position[0]);
 defineGetter(pointer, "y", () => pointer.position[1]);
 
 const stage = new Stage();
+
+popChart = null;
+
+tickCount = 0;
+
 const Square = struct({ x: 0, y: 0, width: 2, height: 2, color: GREY, isAlive: false, needsRedraw: true });
 
 const Grid = struct({ width: 100, height: 100, cellSize: 2, cells: [], nextCells: [] });
@@ -68,6 +73,36 @@ stage.start = () => {
             mainGrid.cells.push(sq);
         }
     }
+    ctx = stage.context;
+
+    // draw chart under grid
+
+    popChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [tickCount],
+            datasets: [{
+                label: 'Population',
+                data: [],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                ],
+                color: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: false,
+                }
+            }
+        }
+    }
+    );
 }
 
 
@@ -99,14 +134,12 @@ stage.tick = (context) => {
         }
     }
 
-    // if (getMouse("Left").Left) {
-    //     for (const square of mainGrid.cells) {
-    //         if (isHovering(square)) {
-    //             square.color = WHITE;
-    //             square.isAlive = true;
-    //         }
-    //     }
-    // }
+    // update chart
+    const aliveCells = mainGrid.cells.filter((cell) => cell.isAlive);
+    popChart.data.labels.push(tickCount);
+    popChart.data.datasets[0].data.push(aliveCells.length);
+    popChart.update();
+
     const touches = getTouches();
     for (const touch of touches) {
         if (!touch) {
@@ -120,6 +153,8 @@ stage.tick = (context) => {
     }
     mainGrid.cells = mainGrid.nextCells;
     mainGrid.nextCells = [];
+
+    tickCount += 1;
 }
 
 on(mouseDown("Middle"), () => {
