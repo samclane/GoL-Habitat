@@ -6,4 +6,4 @@ Also uses [Chart.js](https://www.chartjs.org/)
 
 ## Running
 
-Just open `index.html` in your browser.
+Just open `index.html` in your browser. It'll take a bit to start, as it's initializing the world.

@@ -12,7 +12,7 @@ tickCount = 0;
 
 const Square = struct({ x: 0, y: 0, width: 2, height: 2, color: GREY, isAlive: false, needsRedraw: true });
 
-const Grid = struct({ width: 100, height: 100, cellSize: 2, cells: [], nextCells: [] });
+const Grid = struct({ width: 50, height: 50, cellSize: 2, cells: [], nextCells: [] });
 
 mainGrid = new Grid();
 
@@ -56,6 +56,19 @@ getNeighborhoodColor = (cells) => {
     return maxColor;
 }
 
+getColorData = () => {
+    let counter = {};
+    for (const cell of mainGrid.cells) {
+        if (cell.isAlive) {
+            if (counter[cell.color] === undefined) {
+                counter[cell.color] = 0;
+            }
+            counter[cell.color] += 1;
+        }
+    }
+    return counter;
+}
+
 isHovering = (square) => {
     return pointer.x > square.x && pointer.x < square.x + square.width && pointer.y > square.y && pointer.y < square.y + square.height;
 }
@@ -81,23 +94,25 @@ stage.start = () => {
         type: 'line',
         data: {
             labels: [tickCount],
-            datasets: [{
-                label: 'Population',
-                data: [],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                ],
-                color: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1
-            }]
+            datasets: Object.keys(getColorData()).map((color) => {
+                return {
+                    label: color,
+                    data: [getColorData()[color]],
+                    backgroundColor: [
+                        color,
+                    ],
+                    borderColor: [
+                        color,
+                    ],
+                    color: color,
+                    borderWidth: 1
+                }
+            }),
         },
         options: {
             scales: {
                 y: {
-                    beginAtZero: false,
+                    beginAtZero: true,
                 }
             }
         }
@@ -135,9 +150,22 @@ stage.tick = (context) => {
     }
 
     // update chart
-    const aliveCells = mainGrid.cells.filter((cell) => cell.isAlive);
     popChart.data.labels.push(tickCount);
-    popChart.data.datasets[0].data.push(aliveCells.length);
+
+    popChart.data.datasets = Object.keys(getColorData()).map((color) => {
+        return {
+            label: color,
+            data: popChart.data.datasets.filter((dataset) => dataset.label === color)[0].data.concat([getColorData()[color]]),
+            backgroundColor: [
+                color,
+            ],
+            borderColor: [
+                color,
+            ],
+            color: color,
+            borderWidth: 1
+        }
+    });
     popChart.update();
 
     const touches = getTouches();
