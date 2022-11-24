@@ -10,9 +10,11 @@ popChart = null;
 
 tickCount = 0;
 
-const Square = struct({ x: 0, y: 0, width: 2, height: 2, color: GREY, isAlive: false, needsRedraw: true });
+CELL_SIZE = 3;
 
-const Grid = struct({ width: 50, height: 50, cellSize: 2, cells: [], nextCells: [] });
+const Square = struct({ x: 0, y: 0, width: CELL_SIZE, height: CELL_SIZE, color: GREY, isAlive: false, needsRedraw: true });
+
+const Grid = struct({ width: 75, height: 75, cellSize: CELL_SIZE, cells: [], nextCells: [] });
 
 mainGrid = new Grid();
 
@@ -122,6 +124,9 @@ stage.start = () => {
 
 
 stage.tick = (context) => {
+    if (tickCount % 10 === 0) {
+        popChart.update();
+    }
     // draw all the squares
     for (const square of mainGrid.cells) {
         if (square.needsRedraw) {
@@ -166,7 +171,6 @@ stage.tick = (context) => {
             borderWidth: 1
         }
     });
-    popChart.update();
 
     const touches = getTouches();
     for (const touch of touches) {
