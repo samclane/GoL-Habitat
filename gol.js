@@ -60,13 +60,11 @@ getNeighborhoodColor = (cells) => {
 
 getColorData = () => {
     let counter = {};
-    for (const cell of mainGrid.cells) {
-        if (cell.isAlive) {
-            if (counter[cell.color] === undefined) {
-                counter[cell.color] = 0;
-            }
-            counter[cell.color] += 1;
+    for (const cell of mainGrid.cells.filter((cell) => cell.isAlive)) {
+        if (counter[cell.color] === undefined) {
+            counter[cell.color] = 0;
         }
+        counter[cell.color] += 1;
     }
     return counter;
 }
@@ -123,18 +121,36 @@ stage.start = () => {
 }
 
 
+drawGrid = (context) => {
+    // group by color
+    let colorGroups = {};
+    for (const square of mainGrid.cells) {
+        if (square.isAlive) {
+            if (colorGroups[square.color] === undefined) {
+                colorGroups[square.color] = [];
+            }
+            colorGroups[square.color].push(square);
+        }
+    }
+    for (const color in colorGroups) {
+        context.fillStyle = color;
+        for (const square of colorGroups[color]) {
+            context.fillRect(square.x, square.y, square.width, square.height);
+        }
+    }
+}
+
+const randomSplashColor = memo ( () => {
+    return new Splash(random(999));
+})
+
+
 stage.tick = (context) => {
     if (tickCount % 10 === 0) {
         popChart.update();
     }
     // draw all the squares
-    for (const square of mainGrid.cells) {
-        if (square.needsRedraw) {
-            context.fillStyle = square.color;
-            context.fillRect(square.x, square.y, square.width, square.height);
-            square.needsRedraw = false;
-        }
-    }
+    drawGrid(context);
     // draw grid lines
     // run game of life rules
     for (let i = 0; i < mainGrid.width; i++) {
